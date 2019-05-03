@@ -1,0 +1,9 @@
+.*.swp
+*.swp
+*~
+*.orig
+*.bak
+*.rej
+
+source/
+output/

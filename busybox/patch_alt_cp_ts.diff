@@ -1,0 +1,188 @@
+diff --git a/archival/dpkg.c b/archival/dpkg.c
+index 08f15ad..5f6ba66 100644
+--- a/archival/dpkg.c
++++ b/archival/dpkg.c
+@@ -421,6 +421,50 @@ static void add_edge_to_node(common_node_t *node, edge_t *edge)
+ 	node->edge[node->num_of_edges++] = edge;
+ }
+ 
++/* 
++ * public domain strtok_r() by Charlie Gordon
++ *
++ *   from comp.lang.c  9/14/2007
++ *
++ *      http://groups.google.com/group/comp.lang.c/msg/2ab1ecbb86646684
++ *
++ *     (Declaration that it's public domain):
++ *      http://groups.google.com/group/comp.lang.c/msg/7c7b39328fefab9c
++ */
++
++static char* strtok_r(
++    char *str, 
++    const char *delim, 
++    char **nextp)
++{
++    char *ret;
++
++    if (str == NULL)
++    {
++        str = *nextp;
++    }
++
++    str += strspn(str, delim);
++
++    if (*str == '\0')
++    {
++        return NULL;
++    }
++
++    ret = str;
++
++    str += strcspn(str, delim);
++
++    if (*str)
++    {
++        *str++ = '\0';
++    }
++
++    *nextp = str;
++
++    return ret;
++}
++
+ /*
+  * Create one new node and one new edge for every dependency.
+  *
+diff --git a/miscutils/bc.c b/miscutils/bc.c
+index 36e978e..6ca67e1 100644
+--- a/miscutils/bc.c
++++ b/miscutils/bc.c
+@@ -7378,7 +7378,7 @@ static int xc_vm_init(const char *env_len)
+ //TODO: in GNU bc, the check is (isatty(0) && isatty(1)),
+ //-i option unconditionally enables this regardless of isatty():
+ 	if (isatty(0)) {
+-#if ENABLE_FEATURE_BC_INTERACTIVE
++#if 0 && ENABLE_FEATURE_BC_INTERACTIVE
+ 		G_ttyin = 1;
+ 		// With SA_RESTART, most system calls will restart
+ 		// (IOW: they won't fail with EINTR).
+diff --git a/miscutils/ts.c b/miscutils/ts.c
+index f2d3676..3bbd6b4 100644
+--- a/miscutils/ts.c
++++ b/miscutils/ts.c
+@@ -52,6 +52,7 @@ int ts_main(int argc UNUSED_PARAM, char **argv)
+ 	while ((line = xmalloc_fgets(stdin)) != NULL) {
+ 		struct timeval ts;
+ 		struct tm tm_time;
++        time_t t;
+ 
+ 		gettimeofday(&ts, NULL);
+ 		if (opt) {
+@@ -70,7 +71,8 @@ int ts_main(int argc UNUSED_PARAM, char **argv)
+ 			if (opt & 1) /* -i */
+ 				base = ts1;
+ 		}
+-		localtime_r(&ts.tv_sec, &tm_time);
++        t = ts.tv_sec;
++		localtime_r(&t, &tm_time);
+ 		strftime(date_buf, COMMON_BUFSIZE, fmt_dt2str, &tm_time);
+ 		if (!frac) {
+ 			printf("%s %s", date_buf, line);
+diff --git a/win32/termios.c b/win32/termios.c
+index 25f2ea4..a5c5473 100644
+--- a/win32/termios.c
++++ b/win32/termios.c
+@@ -19,6 +19,15 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
+ 		bb_error_msg_and_die("read_key only works on stdin");
+ 	if (cin == INVALID_HANDLE_VALUE)
+ 		return -1;
++#if ENABLE_FEATURE_EURO
++    if (buf[0]) { // 2-byte char sequence
++        ret = (unsigned char) buf[1];
++        buf[0] = buf[1] = 0;
++        return ret;
++    }
++#else
++    (void) buf;
++#endif
+ 	GetConsoleMode(cin, &mode);
+ 	SetConsoleMode(cin, 0);
+ 
+@@ -61,14 +70,15 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
+ 				case VK_END:
+ 				case VK_DOWN:
+ 				case VK_NEXT:
+-				case VK_LEFT:
+ 				case VK_CLEAR:
+-				case VK_RIGHT:
+ 				case VK_HOME:
+ 				case VK_UP:
+ 				case VK_PRIOR:
+ 				case VK_KANA:
+ 					continue;
++				case VK_LEFT: ret = KEYCODE_ALT_LEFT; goto done;
++				case VK_RIGHT: ret = KEYCODE_ALT_RIGHT; goto done;
++				case VK_DELETE: ret = KEYCODE_ALT_D; goto done;
+ 				}
+ 			}
+ 
+@@ -102,7 +112,20 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
+ 		uchar = record.Event.KeyEvent.uChar.UnicodeChar;
+ 		achar = uchar & 0x7f;
+ 		if (achar != uchar)
++#if 0
+ 			WideCharToMultiByte(CP_ACP, 0, &uchar, 1, &achar, 1, NULL, NULL);
++#else
++        {
++            int n = WideCharToMultiByte(CP_ACP, 0, &uchar, 1, buf, 2, NULL, NULL);;
++            if (n < 2) {
++                ret = buf[0] ? (unsigned char) buf[0] : achar;
++                buf[0] = buf[1] = 0;
++            } else {
++                ret = (unsigned char) buf[0];
++            }
++        }
++        else
++#endif
+ 		ret = achar;
+ #else
+ 		if ( (record.Event.KeyEvent.uChar.AsciiChar & 0x80) == 0x80 ) {
+@@ -111,6 +134,16 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
+ 		}
+ 		ret = record.Event.KeyEvent.uChar.AsciiChar;
+ #endif
++        if (alt_pressed) {
++            switch (ret)
++            {
++				case '\t': continue;
++				case '\b': ret = KEYCODE_ALT_BACKSPACE; goto done;
++				case 'd': ret = KEYCODE_ALT_D; goto done;
++				case 'f': ret = KEYCODE_ALT_RIGHT; goto done;
++				case 'b': ret = KEYCODE_ALT_LEFT; goto done;
++            }
++        }
+ 		break;
+ 	}
+  done:
+diff --git a/win32/winansi.c b/win32/winansi.c
+index f5d836b..22dbdff 100644
+--- a/win32/winansi.c
++++ b/win32/winansi.c
+@@ -463,6 +463,7 @@ static BOOL winansi_CharToOemBuff(LPCSTR s, LPSTR d, DWORD len)
+ 
+ 	if (!s || !d)
+ 		return FALSE;
++    i = (unsigned char) *s;
+ 
+ 	buf = xmalloc(len*sizeof(WCHAR));
+ 	MultiByteToWideChar(CP_ACP, 0, s, len, buf, len);
+@@ -474,6 +475,9 @@ static BOOL winansi_CharToOemBuff(LPCSTR s, LPSTR d, DWORD len)
+ 			}
+ 		}
+ 	}
++    else if (len == 1 && d[0] == '?' && GetOEMCP() > 874) {
++        d[0] = i;
++    }
+ 	free(buf);
+ 	return TRUE;
+ }
