@@ -1,0 +1,33 @@
+Poor Man's Development Utilities for Windows x86_64
+===================================================
+
+This project aims to provide a collection of Windows executables that fit the
+basic needs of coding. The term `modules` refer to specific software packages
+providing the executables. This project is inspired by busybox-w32.
+
+Concepts
+--------
+
+* Simple
+* Lightweight
+* Standalone
+* Free
+
+Build
+-----
+
+This project is intended to be cross-built using MinGW-w64 toolchain in Linux.
+The binaries are built under Ubuntu 14.04 on Windows 10 via WSL.
+
+License
+-------
+
+The Makefile framework is under MIT license. The code, patches and executables
+of the modules follow their license respectively.
+
+Modules
+-------
+
+* busybox-w32 - FRP 3128
+* make - 4.2.1
+* lua - 5.2.4
