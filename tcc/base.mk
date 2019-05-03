@@ -13,7 +13,6 @@ clean:
 	rm -rf source $(OUTPUTDIR)/$(DSTDIR)
 
 $(OUTPUTDIR)/$(DSTDIR)/$(EXE): $(SOURCEDIR)/$(SRCFILE)
-	@mkdir -p $(@D)
 	unzip -o $< -d $(OUTPUTDIR)
 	touch -r $@ $<
 

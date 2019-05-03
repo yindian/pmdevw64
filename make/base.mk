@@ -16,10 +16,10 @@ clean:
 $(OUTPUTDIR)/$(EXE): source/$(SRCDIR)/$(EXE)
 	@mkdir -p $(@D)
 	cp -p $< $@
-	$(CROSSHOST)-strip -p $@
 
 source/$(SRCDIR)/$(EXE): source/$(SRCDIR)/Makefile
 	$(MAKE) -C source/$(SRCDIR)
+	$(CROSSHOST)-strip -p $@
 
 source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	@mkdir -p source

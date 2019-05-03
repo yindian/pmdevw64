@@ -14,15 +14,16 @@ clean:
 $(OUTPUTDIR)/$(EXE): source/$(SRCDIR)/$(EXE)
 	@mkdir -p $(@D)
 	cp -p $< $@
-	$(CROSSHOST)-strip -p $@
 
 source/$(SRCDIR)/$(EXE): source/$(SRCDIR)/Makefile
 	$(MAKE) -C $(<D) LUA_T=$(EXE) CC=$(CROSSHOST)-gcc \
 		AR="$(CROSSHOST)-ar rcu" RANLIB=$(CROSSHOST)-ranlib $(EXE)
+	$(CROSSHOST)-strip -p $@
 
 source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	@mkdir -p source
 	tar -C source -xzf $<
+	touch -r $@ $<
 
 $(SOURCEDIR)/$(SRCFILE):
 	@mkdir -p $(@D)

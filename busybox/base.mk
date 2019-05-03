@@ -24,6 +24,7 @@ source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	@mkdir -p source
 	tar -C source -xzf $<
 	for c in $(PATCHES); do cat $$c | (cd $(@D); patch -p1); done
+	touch -r $@ $<
 
 source/$(SRCDIR)/.config: $(CONFIG) source/$(SRCDIR)/Makefile
 	cp -p $< $@
