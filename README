@@ -31,3 +31,16 @@ Modules
 * busybox-w32 - FRP 3128
 * make - 4.2.1
 * lua - 5.2.4
+* tcc - 0.9.27
+* jq - 1.4
+* 7z - 16.04
+* cscope - 15.9
+
+More
+----
+
+You can try the following alternatives to be a poor man no more.
+
+* Use a full-featured editor such as Vim instead of busybox vi
+* Use a full-featured C compiler such as GCC instead of TinyCC
+* Use Linux instead of Windows
