@@ -1,0 +1,111 @@
+#!/usr/bin/env lua
+local verbose, no_act, force, op
+local pat, sub, gflag
+local i = 1
+local ok, ret = pcall(function()
+    while true do
+        local s = arg[i]
+        if s and s:sub(1, 1) == "-" then
+            if s == "-v" then
+                verbose = true
+            elseif s == "-n" then
+                no_act = true
+                verbose = true
+            elseif s == "-f" then
+                force = true
+            else
+                assert(false, "Unknown switch")
+            end
+        else
+            break
+        end
+        i = i + 1
+    end
+    op = arg[i]
+    assert(op, "Missing operation")
+    i = i + 1
+    assert(op:sub(1, 1) == "s", "Invalid command")
+    local sep = op:sub(2, 2)
+    local p, q = op:find(sep, 3, true)
+    assert(p, "No matching " .. sep)
+    assert(p == q)
+    pat = op:sub(3, p - 1)
+    assert(pat ~= "", "Empty pattern")
+    q = op:find(sep, q + 1, true)
+    assert(q, "No closing " .. sep)
+    sub = op:sub(p + 1, q - 1)
+    local flag = op:sub(q + 1)
+    if flag ~= "" then
+        if flag == "g" then
+            gflag = true
+        else
+            assert(false, "Unknown flag " .. flag)
+        end
+    end
+end)
+if not ok then
+    if ret then
+        print(ret)
+    end
+    print "Usage: rename [-v] [-n] [-f] s/<pat>/<sub>/<flag> [filenames]"
+    return
+end
+
+if not arg[i] then
+    if verbose then
+        print "reading filenames from STDIN"
+    end
+    local j = i
+    for s in io.lines() do
+        arg[j] = s
+        j = j + 1
+    end
+end
+
+pat = pat:gsub("%%", "%%%%"):gsub("\\", "%%")
+sub = sub:gsub("%%", "%%%%"):gsub("\\", "%%")
+local n = 1
+if gflag then
+    n = nil
+end
+if verbose then
+    print("pat:", pat)
+    print("sub:", sub)
+    print("n:", n)
+end
+while arg[i] do
+    local was = arg[i]
+    local now = was:gsub(pat, sub, n)
+    local exists
+    if now ~= was then
+        if no_act then
+            ok, ret = true
+        else
+            ok, ret = os.rename(was, now)
+            if not ok then
+                local f = io.open(now)
+                if f then
+                    f:close()
+                    exists = true
+                    if force then
+                        if verbose then
+                            print(now .. " exists, trying to remove")
+                        end
+                        if os.remove(now) then
+                            ok, ret = os.rename(was, now)
+                        end
+                    end
+                end
+            end
+        end
+        if exists and not force then
+            print(was .. " not renamed: " .. now .. " already exists")
+        elseif not ok then
+            print("Can't rename " .. was .. " " .. now .. ":", ret)
+        elseif verbose then
+            print(was .. " renamed as " .. now)
+        end
+    end
+    i = i + 1
+end
+-- vi: ts=4 sw=4 et tw=80
