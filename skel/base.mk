@@ -8,4 +8,5 @@ clean:
 	@:
 
 $(addprefix $(OUTPUTDIR)/,$(FILES)): $(OUTPUTDIR)/%: %
+	@mkdir -p $(@D)
 	cp -p $< $@

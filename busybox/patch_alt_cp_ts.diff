@@ -6,6 +6,7 @@ index 08f15ad..5f6ba66 100644
  	node->edge[node->num_of_edges++] = edge;
  }
  
++#define strtok_r strtok_r_static
 +/* 
 + * public domain strtok_r() by Charlie Gordon
 + *
@@ -16,7 +17,6 @@ index 08f15ad..5f6ba66 100644
 + *     (Declaration that it's public domain):
 + *      http://groups.google.com/group/comp.lang.c/msg/7c7b39328fefab9c
 + */
-+
 +static char* strtok_r(
 +    char *str, 
 +    const char *delim, 
