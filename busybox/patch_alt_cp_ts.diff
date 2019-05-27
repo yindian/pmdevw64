@@ -1,5 +1,5 @@
 diff --git a/archival/dpkg.c b/archival/dpkg.c
-index 08f15ad..5f6ba66 100644
+index 08f15ad..93b474f 100644
 --- a/archival/dpkg.c
 +++ b/archival/dpkg.c
 @@ -421,6 +421,50 @@ static void add_edge_to_node(common_node_t *node, edge_t *edge)
@@ -88,6 +88,92 @@ index f2d3676..3bbd6b4 100644
  		strftime(date_buf, COMMON_BUFSIZE, fmt_dt2str, &tm_time);
  		if (!frac) {
  			printf("%s %s", date_buf, line);
+diff --git a/win32/mingw.c b/win32/mingw.c
+index 3f80b53..34321e0 100644
+--- a/win32/mingw.c
++++ b/win32/mingw.c
+@@ -1284,6 +1284,40 @@ int mingw_unlink(const char *pathname)
+ 	return unlink(pathname);
+ }
+ 
++static int is_leap(int y)
++{
++	/* Avoid overflow */
++	if (y>INT_MAX-1900) y -= 2000;
++	y += 1900;
++	return !(y%4) && ((y%100) || !(y%400));
++}
++
++static int week_num(const struct tm *tm)
++{
++	int val = (tm->tm_yday + 7U - (tm->tm_wday+6U)%7) / 7;
++	/* If 1 Jan is just 1-3 days past Monday,
++	 * the previous week is also in this year. */
++	if ((tm->tm_wday + 371U - tm->tm_yday - 2) % 7 <= 2)
++		val++;
++	if (!val) {
++		/* If 31 December of prev year a Thursday,
++		 * or Friday of a leap year, then the
++		 * prev year has 53 weeks. */
++		int dec31 = (tm->tm_wday + 7U - tm->tm_yday - 1) % 7;
++		val = 52;
++		if (dec31 == 4 || (dec31 == 5 && is_leap(tm->tm_year%400-1)))
++			val++;
++	} else if (val == 53) {
++		/* If 1 January is not a Thursday, and not
++		 * a Wednesday of a leap year, then this
++		 * year has only 52 weeks. */
++		int jan1 = (tm->tm_wday + 371U - tm->tm_yday) % 7;
++		if (jan1 != 4 && (jan1 != 3 || !is_leap(tm->tm_year)))
++			val = 1;
++	}
++	return val;
++}
++
+ #undef strftime
+ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm *tm)
+ {
+@@ -1351,6 +1385,30 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
+ 				/* Microsoft uses '#' rather than '-' to remove padding */
+ 				t[1] = '#';
+ 			}
++			else if ( t[1] == 'g' || t[1] == 'G' || (t[1] == '-' && (
++									t[2] == 'g' || t[2] == 'G')) ) {
++				int width = 2;
++				int val = tm->tm_year + 1900;
++				if (tm->tm_yday < 3 && week_num(tm) != 1) val--;
++				else if (tm->tm_yday > 360 && week_num(tm) == 1) val++;
++				if (t[1] == 'g' || (t[1] == '-' && t[2] == 'g')) val %= 100;
++				else width = 4;
++				if (t[1] == '-') {
++					sprintf(buffer, "%d", val);
++				} else {
++					sprintf(buffer, "%0*d", width, val);
++				}
++				replace = buffer;
++			}
++			else if ( t[1] == 'V' || (t[1] == '-' && t[2] == 'V') ) {
++				int val = week_num(tm);
++				if (t[1] == '-') {
++					sprintf(buffer, "%d", val);
++				} else {
++					sprintf(buffer, "%02d", val);
++				}
++				replace = buffer;
++			}
+ 			else if ( t[1] != '\0' ) {
+ 				++t;
+ 			}
+@@ -1361,6 +1419,9 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
+ 
+ 				*t = '\0';
+ 				m = t - fmt;
++				if ( t[1] == '-' ) {
++					++t;
++				}
+ 				newfmt = xasprintf("%s%s%s", fmt, replace, t+2);
+ 				free(fmt);
+ 				t = newfmt + m + strlen(replace);
 diff --git a/win32/termios.c b/win32/termios.c
 index 25f2ea4..a5c5473 100644
 --- a/win32/termios.c
