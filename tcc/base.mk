@@ -2,8 +2,8 @@ EXE = tcc.exe
 DSTDIR = tcc
 SRCDIR = tcc
 SRCURL = http://download.savannah.gnu.org/releases/tinycc/$(SRCFILE)
-SRCFILE = tcc-0.9.27-win64-bin.zip
-SRCMD5 = d73cf66cec8c761de38c7a3d16c9eb0d
+SRCFILE = tcc-0.9.27-win32-bin.zip
+SRCMD5 = 5a3979bd5044b795547a4948a5625a12
 
 .PHONY: clean
 

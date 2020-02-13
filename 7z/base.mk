@@ -1,8 +1,8 @@
 EXE = 7z.exe
 SRCDIR = .
 SRCURL = https://www.7-zip.org/a/$(SRCFILE)
-SRCFILE = 7z1604-x64.exe
-SRCMD5 = 04584f3aed5b27fd0ac2751b36273d94
+SRCFILE = 7z1604.exe
+SRCMD5 = da7db29e783780f3a581e6e0bf4c595d
 
 .PHONY: clean
 

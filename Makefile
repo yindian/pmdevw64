@@ -1,4 +1,4 @@
-CROSSHOST ?= x86_64-w64-mingw32
+CROSSHOST ?= i686-w64-mingw32
 PROJROOT := $(patsubst %/,%,$(dir $(CURDIR)/$(lastword $(MAKEFILE_LIST))))
 SOURCEDIR = $(PROJROOT)/source
 OUTPUTDIR = $(PROJROOT)/pmdev

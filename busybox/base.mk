@@ -29,7 +29,7 @@ source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	touch -r $@ $<
 
 source/$(SRCDIR)/.config: $(CONFIG) source/$(SRCDIR)/Makefile
-	$(MAKE) -C source/$(SRCDIR) mingw64_defconfig
+	$(MAKE) -C source/$(SRCDIR) mingw32_defconfig
 	$(SED) -i '$(call config_to_sed, $<)' $@
 
 $(SOURCEDIR)/$(SRCFILE):

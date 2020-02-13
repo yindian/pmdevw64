@@ -1,8 +1,8 @@
 EXE = jq.exe
 SRCDIR = .
 SRCURL = https://github.com/stedolan/jq/releases/download/jq-1.4/$(SRCFILE)
-SRCFILE = jq-win64.exe
-SRCMD5 = 223c9a13fd8fd70b844bdb6be3ea9200
+SRCFILE = jq-win32.exe
+SRCMD5 = a5342bab6db36e9d4e0116745a7568b6
 
 .PHONY: clean
 
