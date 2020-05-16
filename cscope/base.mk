@@ -9,6 +9,11 @@ REGEX = regex-alpha3.8p1
 EXTRASRCURLS += https://github.com/garyhouston/regex/archive/alpha3.8p1.tar.gz
 EXTRASRCFILES = $(PDCURSES).tar.gz $(REGEX).tar.gz
 PATCHES = cscope-win32.patch
+ifneq ($(shell which gsed 2>/dev/null),)
+SED = gsed
+else
+SED = sed
+endif
 
 .PHONY: clean
 
@@ -33,7 +38,7 @@ source/$(SRCDIR)/$(EXE): source/$(SRCDIR)/Makefile
 source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	@mkdir -p source
 	for c in $(EXTRASRCFILES); do tar -C source -xzf $(SOURCEDIR)/$$c; done
-	sed -i 's/\<ar\>/$(AR)/g' source/$(REGEX)/Makefile
+	$(SED) -i 's/\<ar\>/$$(AR)/g' source/$(REGEX)/Makefile
 	tar -C source -xzf $<
 	for c in $(PATCHES); do cat $$c | (cd $(@D); patch -p2); done
 
