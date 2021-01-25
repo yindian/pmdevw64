@@ -230,24 +230,6 @@ index 25f2ea4..a5c5473 100644
  	GetConsoleMode(cin, &mode);
  	SetConsoleMode(cin, 0);
  
-@@ -61,14 +70,15 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
- 				case VK_END:
- 				case VK_DOWN:
- 				case VK_NEXT:
--				case VK_LEFT:
- 				case VK_CLEAR:
--				case VK_RIGHT:
- 				case VK_HOME:
- 				case VK_UP:
- 				case VK_PRIOR:
- 				case VK_KANA:
- 					continue;
-+				case VK_LEFT: ret = KEYCODE_ALT_LEFT; goto done;
-+				case VK_RIGHT: ret = KEYCODE_ALT_RIGHT; goto done;
-+				case VK_DELETE: ret = KEYCODE_ALT_D; goto done;
- 				}
- 			}
- 
 @@ -102,7 +112,20 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
  		uchar = record.Event.KeyEvent.uChar.UnicodeChar;
  		achar = uchar & 0x7f;
@@ -269,23 +251,6 @@ index 25f2ea4..a5c5473 100644
  		ret = achar;
  #else
  		if ( (record.Event.KeyEvent.uChar.AsciiChar & 0x80) == 0x80 ) {
-@@ -111,6 +134,16 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
- 		}
- 		ret = record.Event.KeyEvent.uChar.AsciiChar;
- #endif
-+        if (alt_pressed) {
-+            switch (ret)
-+            {
-+				case '\t': continue;
-+				case '\b': ret = KEYCODE_ALT_BACKSPACE; goto done;
-+				case 'd': ret = KEYCODE_ALT_D; goto done;
-+				case 'f': ret = KEYCODE_ALT_RIGHT; goto done;
-+				case 'b': ret = KEYCODE_ALT_LEFT; goto done;
-+            }
-+        }
- 		break;
- 	}
-  done:
 diff --git a/win32/winansi.c b/win32/winansi.c
 index 41ca3cc..d8ac0f6 100644
 --- a/win32/winansi.c
