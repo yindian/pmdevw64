@@ -1,8 +1,8 @@
 EXE = busybox.exe
 SRCDIR = busybox-w32
 SRCURL = https://frippery.org/files/busybox/$(SRCFILE)
-SRCFILE = busybox-w32-FRP-4621-gf3c5e8bc3.tgz
-SRCMD5 = 409f2ffa15afb6e94883c577c49f5cdf
+SRCFILE = busybox-w32-FRP-4784-g5507c8744.tgz
+SRCMD5 = ab4f898c36f4f5dcb74355dd81952455
 PATCHES = patch_alt_cp_ts.diff
 CONFIG = config
 ifneq ($(shell which gsed 2>/dev/null),)

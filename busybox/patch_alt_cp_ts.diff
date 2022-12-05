@@ -1,5 +1,5 @@
 diff --git a/archival/dpkg.c b/archival/dpkg.c
-index 8e1f943..ccac134 100644
+index a6a8333..f357c24 100644
 --- a/archival/dpkg.c
 +++ b/archival/dpkg.c
 @@ -421,6 +421,50 @@ static void add_edge_to_node(common_node_t *node, edge_t *edge)
@@ -54,10 +54,10 @@ index 8e1f943..ccac134 100644
   * Create one new node and one new edge for every dependency.
   *
 diff --git a/miscutils/bc.c b/miscutils/bc.c
-index fe555d0..7cb4461 100644
+index 01402b3..8d4787d 100644
 --- a/miscutils/bc.c
 +++ b/miscutils/bc.c
-@@ -7487,7 +7487,7 @@ static int xc_vm_init(const char *env_len)
+@@ -7489,7 +7489,7 @@ static int xc_vm_init(const char *env_len)
  //TODO: in GNU bc, the check is (isatty(0) && isatty(1)),
  //-i option unconditionally enables this regardless of isatty():
  	if (isatty(0)) {
@@ -161,11 +161,32 @@ index 5470502..6191c72 100644
  		} else
  #endif
  		{
+diff --git a/shell/ash.c b/shell/ash.c
+index 13200da..c397e6f 100644
+--- a/shell/ash.c
++++ b/shell/ash.c
+@@ -198,6 +198,7 @@
+ //                      APPLET_ODDNAME:name  main location    suid_type     help
+ //applet:IF_SH_IS_ASH(  APPLET_ODDNAME(sh,   ash, BB_DIR_BIN, BB_SUID_DROP, ash))
+ //applet:IF_BASH_IS_ASH(APPLET_ODDNAME(bash, ash, BB_DIR_BIN, BB_SUID_DROP, ash))
++//applet:IF_BASH_IS_ASH(APPLET_ODDNAME(dash, ash, BB_DIR_BIN, BB_SUID_DROP, ash))
+ 
+ //kbuild:lib-$(CONFIG_SHELL_ASH) += ash.o ash_ptr_hack.o shell_common.o
+ //kbuild:lib-$(CONFIG_ASH_RANDOM_SUPPORT) += random.o
 diff --git a/win32/mingw.c b/win32/mingw.c
-index f34ea11..d9a3352 100644
+index 606a483..4bdd1e5 100644
 --- a/win32/mingw.c
 +++ b/win32/mingw.c
-@@ -1578,6 +1578,40 @@ int sysinfo(struct sysinfo *info)
+@@ -1615,7 +1615,7 @@ int mingw_mkdir(const char *path, int mode UNUSED_PARAM)
+ 
+ 	if ( (ret=mkdir(path)) < 0 ) {
+ 		lerrno = errno;
+-		if ( lerrno == EACCES && stat(path, &st) == 0 ) {
++		if ( /*lerrno == EACCES &&*/ stat(path, &st) == 0 ) {
+ 			ret = 0;
+ 			lerrno = 0;
+ 		}
+@@ -1767,6 +1767,40 @@ int sysinfo(struct sysinfo *info)
  	return 0;
  }
  
@@ -206,7 +227,7 @@ index f34ea11..d9a3352 100644
  #undef strftime
  size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm *tm)
  {
-@@ -1645,6 +1679,30 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
+@@ -1834,6 +1868,30 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
  				/* Microsoft uses '#' rather than '-' to remove padding */
  				t[1] = '#';
  			}
@@ -237,7 +258,7 @@ index f34ea11..d9a3352 100644
  			else if ( t[1] != '\0' ) {
  				++t;
  			}
-@@ -1655,6 +1713,9 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
+@@ -1844,6 +1902,9 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
  
  				*t = '\0';
  				m = t - fmt;
@@ -289,7 +310,7 @@ index 45d4e77..4b30084 100644
  #else
  		if ( (record.Event.KeyEvent.uChar.AsciiChar & 0x80) == 0x80 ) {
 diff --git a/win32/winansi.c b/win32/winansi.c
-index 622ba1c..19b6d88 100644
+index a78d5f7..2b4b882 100644
 --- a/win32/winansi.c
 +++ b/win32/winansi.c
 @@ -661,6 +661,7 @@ static BOOL winansi_CharToOemBuff(LPCSTR s, LPSTR d, DWORD len)
