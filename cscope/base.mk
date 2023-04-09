@@ -1,4 +1,5 @@
 EXE = cscope.exe
+SOURCE = source/$(ARCH)
 SRCDIR = cscope-15.9/src
 SRCURL = https://downloads.sourceforge.net/project/cscope/cscope/v15.9/$(SRCFILE)
 SRCFILE = cscope-15.9.tar.gz
@@ -20,26 +21,26 @@ endif
 all: $(OUTPUTDIR)/$(EXE)
 
 clean:
-	rm -rf source $(OUTPUTDIR)/$(EXE)
+	rm -rf $(SOURCE) $(OUTPUTDIR)/$(EXE)
 
-$(OUTPUTDIR)/$(EXE): source/$(SRCDIR)/$(EXE)
+$(OUTPUTDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/$(EXE)
 	@mkdir -p $(@D)
 	cp -p $< $@
 
-source/$(SRCDIR)/$(EXE): source/$(SRCDIR)/Makefile
-	$(MAKE) -j1 -C source/$(REGEX) CC=$(CROSSHOST)-gcc AR=$(CROSSHOST)-ar\
+$(SOURCE)/$(SRCDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/Makefile
+	$(MAKE) -j1 -C $(SOURCE)/$(REGEX) CC=$(CROSSHOST)-gcc AR=$(CROSSHOST)-ar\
 		CFLAGS="-I. -DPOSIX_MISTAKE -O2" lib
-	$(MAKE) -C source/$(PDCURSES)/wincon CC=$(CROSSHOST)-gcc \
+	$(MAKE) -C $(SOURCE)/$(PDCURSES)/wincon CC=$(CROSSHOST)-gcc \
 		AR=$(CROSSHOST)-ar STRIP=$(CROSSHOST)-strip \
 		LINK=$(CROSSHOST)-gcc
 	$(MAKE) -C $(<D) CC=$(CROSSHOST)-gcc STRIP=$(CROSSHOST)-strip
 	$(CROSSHOST)-strip -p $@
 
-source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
-	@mkdir -p source
-	for c in $(EXTRASRCFILES); do tar -C source -xzf $(SOURCEDIR)/$$c; done
-	$(SED) -i 's/\<ar\>/$$(AR)/g' source/$(REGEX)/Makefile
-	tar -C source -xzf $<
+$(SOURCE)/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
+	@mkdir -p $(SOURCE)
+	for c in $(EXTRASRCFILES); do tar -C $(SOURCE) -xzf $(SOURCEDIR)/$$c; done
+	$(SED) -i 's/\<ar\>/$$(AR)/g' $(SOURCE)/$(REGEX)/Makefile
+	tar -C $(SOURCE) -xzf $<
 	for c in $(PATCHES); do cat $$c | (cd $(@D); patch -p2); done
 
 $(SOURCEDIR)/$(SRCFILE):

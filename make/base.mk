@@ -1,4 +1,5 @@
 EXE = make.exe
+SOURCE = source/$(ARCH)
 SRCDIR = make-4.2.1
 SRCURL = https://ftp.gnu.org/gnu/make/$(SRCFILE)
 SRCFILE = make-4.2.1.tar.bz2
@@ -11,19 +12,19 @@ PATCHES += make-4.2.1-busybox-sh.patch
 all: $(OUTPUTDIR)/$(EXE)
 
 clean:
-	rm -rf source $(OUTPUTDIR)/$(EXE)
+	rm -rf $(SOURCE) $(OUTPUTDIR)/$(EXE)
 
-$(OUTPUTDIR)/$(EXE): source/$(SRCDIR)/$(EXE)
+$(OUTPUTDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/$(EXE)
 	@mkdir -p $(@D)
 	cp -p $< $@
 
-source/$(SRCDIR)/$(EXE): source/$(SRCDIR)/Makefile
-	$(MAKE) -C source/$(SRCDIR)
+$(SOURCE)/$(SRCDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/Makefile
+	$(MAKE) -C $(SOURCE)/$(SRCDIR)
 	$(CROSSHOST)-strip -p $@
 
-source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
-	@mkdir -p source
-	tar -C source -xjf $<
+$(SOURCE)/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
+	@mkdir -p $(SOURCE)
+	tar -C $(SOURCE) -xjf $<
 	for c in $(PATCHES); do cat $$c | (cd $(@D); patch -p1); done
 	(cd $(@D); ./configure --host=$(CROSSHOST) --without-libintl-prefix \
 		--without-libiconv-prefix ac_cv_dos_paths=yes )

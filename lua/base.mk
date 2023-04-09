@@ -1,4 +1,5 @@
 EXE = lua.exe
+SOURCE = source/$(ARCH)
 SRCDIR = lua-5.2.4/src
 SRCURL = http://www.lua.org/ftp/$(SRCFILE)
 SRCFILE = lua-5.2.4.tar.gz
@@ -9,20 +10,20 @@ SRCMD5 = 913fdb32207046b273fdb17aad70be13
 all: $(OUTPUTDIR)/$(EXE)
 
 clean:
-	rm -rf source $(OUTPUTDIR)/$(EXE)
+	rm -rf $(SOURCE) $(OUTPUTDIR)/$(EXE)
 
-$(OUTPUTDIR)/$(EXE): source/$(SRCDIR)/$(EXE)
+$(OUTPUTDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/$(EXE)
 	@mkdir -p $(@D)
 	cp -p $< $@
 
-source/$(SRCDIR)/$(EXE): source/$(SRCDIR)/Makefile
+$(SOURCE)/$(SRCDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/Makefile
 	$(MAKE) -C $(<D) LUA_T=$(EXE) CC=$(CROSSHOST)-gcc \
 		AR="$(CROSSHOST)-ar rcu" RANLIB=$(CROSSHOST)-ranlib $(EXE)
 	$(CROSSHOST)-strip -p $@
 
-source/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
-	@mkdir -p source
-	tar -C source -xzf $<
+$(SOURCE)/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
+	@mkdir -p $(SOURCE)
+	tar -C $(SOURCE) -xzf $<
 	touch -r $@ $<
 
 $(SOURCEDIR)/$(SRCFILE):

@@ -1,34 +1,30 @@
-CROSSHOST ?= x86_64-w64-mingw32
-PROJROOT := $(patsubst %/,%,$(dir $(CURDIR)/$(lastword $(MAKEFILE_LIST))))
-SOURCEDIR = $(PROJROOT)/source
-OUTPUTDIR = $(PROJROOT)/pmdev
-export CROSSHOST PROJROOT SOURCEDIR OUTPUTDIR
+ARCHES = x64 x86 arm64
+CROSSHOST_x64 = x86_64-w64-mingw32
+CROSSHOST_x86 = i686-w64-mingw32
+CROSSHOST_arm64 = aarch64-w64-mingw32
 
-.PHONY: build clean
-.PHONY: release
-RELEASE = pmdev-bin.zip
+NOARCH := $(foreach arch,$(ARCHES),$(if $(shell which $(CROSSHOST_$(arch))-gcc 2>/dev/null),,$(arch)))
+ARCHES := $(filter-out $(NOARCH),$(ARCHES))
+PROJROOT := $(patsubst %/,%,$(dir $(CURDIR)/$(lastword $(MAKEFILE_LIST))))
+
+.PHONY: build clean release
 
 all: build
 
-MKFN = base.mk
-MODULES := $(patsubst $(PROJROOT)/%/$(MKFN),%,$(wildcard $(PROJROOT)/*/$(MKFN)))
-MODULE_BUILDS = $(addprefix module_build_,$(filter-out $(DISABLE),$(MODULES)))
-MODULE_CLEANS = $(addprefix module_clean_,$(filter-out $(DISABLE),$(MODULES)))
-.PHONY: $(MODULE_BUILDS) $(MODULE_BUILDS)
+.PHONY: $(addprefix build_,$(ARCHES)) $(addprefix clean_,$(ARCHES)) $(addprefix release_,$(ARCHES))
+build: $(addprefix build_,$(ARCHES))
+	@echo Build All Done.
 
-build: $(MODULE_BUILDS)
-	@echo Build Done.
+clean: $(addprefix clean_,$(ARCHES))
+	@echo Clean All Done.
 
-clean: $(MODULE_CLEANS)
-	rm -rf $(OUTPUTDIR)
-	rm -f $(PROJROOT)/$(RELEASE)
-	@echo Clean Done.
+release: $(addprefix release_,$(ARCHES))
+	@echo Release All Done.
 
-release: build
-	cd $(PROJROOT) ; 7z -tzip -mx9 a $(RELEASE) $(notdir $(OUTPUTDIR))
+define ArchRule
+$(2)_$(1):
+	@echo Doing $(2) $(1)
+	+$(MAKE) -f $(PROJROOT)/Makefile.single ARCH=$(1) CROSSHOST=$$(CROSSHOST_$(1)) PROJROOT=$(PROJROOT) SOURCEDIR=$(PROJROOT)/$(1)/source OUTPUTDIR=$(PROJROOT)/$(1)/pmdev RELEASE=pmdev-$(1)-bin.zip $(2)
+endef
 
-$(MODULE_BUILDS): module_build_%: $(PROJROOT)/%/$(MKFN)
-	$(MAKE) -C $(<D) -f $<
-
-$(MODULE_CLEANS): module_clean_%: $(PROJROOT)/%/$(MKFN)
-	$(MAKE) -C $(<D) -f $< clean
+$(foreach arch,$(ARCHES),$(foreach target,build clean release,$(eval $(call ArchRule,$(arch),$(target)))))
