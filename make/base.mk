@@ -20,7 +20,7 @@ $(OUTPUTDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/$(EXE)
 
 $(SOURCE)/$(SRCDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/Makefile
 	$(MAKE) -C $(SOURCE)/$(SRCDIR)
-	$(CROSSHOST)-strip -p $@
+	-$(CROSSHOST)-strip -p $@
 
 $(SOURCE)/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	@mkdir -p $(SOURCE)

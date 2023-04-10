@@ -34,7 +34,7 @@ $(SOURCE)/$(SRCDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/Makefile
 		AR=$(CROSSHOST)-ar STRIP=$(CROSSHOST)-strip \
 		LINK=$(CROSSHOST)-gcc
 	$(MAKE) -C $(<D) CC=$(CROSSHOST)-gcc STRIP=$(CROSSHOST)-strip
-	$(CROSSHOST)-strip -p $@
+	-$(CROSSHOST)-strip -p $@
 
 $(SOURCE)/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	@mkdir -p $(SOURCE)
