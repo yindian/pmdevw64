@@ -19,7 +19,7 @@ $(OUTPUTDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/$(EXE)
 $(SOURCE)/$(SRCDIR)/$(EXE): $(SOURCE)/$(SRCDIR)/Makefile
 	$(MAKE) -C $(<D) LUA_T=$(EXE) CC=$(CROSSHOST)-gcc \
 		AR="$(CROSSHOST)-ar rcu" RANLIB=$(CROSSHOST)-ranlib $(EXE)
-	-$(CROSSHOST)-strip -p $@
+	$(CROSSHOST)-strip -p $@ || $(CROSSHOST)-strip $@
 
 $(SOURCE)/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 	@mkdir -p $(SOURCE)
