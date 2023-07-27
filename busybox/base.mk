@@ -5,6 +5,7 @@ SRCURL = https://frippery.org/files/busybox/$(SRCFILE)
 SRCFILE = busybox-w32-FRP-5007-g82accfc19.tgz
 SRCMD5 = 430498acf892f2ca896278b7333a5746
 PATCHES = patch_alt_cp_ts.diff
+PATCHES += patch_old_mingw.diff
 ifneq ($(shell $(CROSSHOST)-gcc -v 2>&1 | grep clang),)
 PATCHES += patch_clang.diff
 endif

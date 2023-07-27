@@ -1,0 +1,76 @@
+From 0476a3411f16604422bfafddcc3ca0b9791d5188 Mon Sep 17 00:00:00 2001
+From: Ron Yorston <rmy@pobox.com>
+Date: Wed, 14 Jun 2023 11:27:06 +0100
+Subject: [PATCH] Fixes for old mingw-w64
+
+Allow current busybox-w32 to build with the CentOS 6 version of
+mingw-w64.
+
+- Fix declaration of setlinebuf().  (GitLab issue 116)
+
+- Define ENABLE_VIRTUAL_TERMINAL_INPUT.  (GitLab issue 117)
+
+- Define IO_REPARSE_TAG_APPEXECLINK.
+
+- Avoid a compiler warning in coreutils/shuf.c.
+---
+ coreutils/shuf.c | 2 +-
+ include/mingw.h  | 6 +++++-
+ win32/winansi.c  | 4 ++++
+ 3 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/coreutils/shuf.c b/coreutils/shuf.c
+index 466969745..d84a4fc37 100644
+--- a/coreutils/shuf.c
++++ b/coreutils/shuf.c
+@@ -212,7 +212,7 @@ int shuf_main(int argc, char **argv)
+ 				printf("%.*s%0*llu%c", pfx_len, pfx, padding_width, lo + (uintptr_t)lines[i], eol);
+ 			else
+ #endif
+-				printf("%llu%c", lo + (uintptr_t)lines[i], eol);
++				printf("%"LL_FMT"u%c", lo + (uintptr_t)lines[i], eol);
+ 		} else
+ 			printf("%s%c", lines[i], eol);
+ 	}
+diff --git a/include/mingw.h b/include/mingw.h
+index 22c59f483..5d2fb39ee 100644
+--- a/include/mingw.h
++++ b/include/mingw.h
+@@ -144,7 +144,7 @@ pid_t mingw_fork_compressor(int fd, const char *compressor, const char *mode);
+ #define popen mingw_popen
+ #define pclose mingw_pclose
+ 
+-IMPL(setlinebuf, void, ,FILE * UNUSED_PARAM)
++IMPL(setlinebuf, void, ,FILE *fd UNUSED_PARAM)
+ 
+ /*
+  * ANSI emulation wrappers
+@@ -477,6 +477,10 @@ int mingw_open (const char *filename, int oflags, ...);
+ int mingw_xopen(const char *filename, int oflags);
+ ssize_t mingw_open_read_close(const char *fn, void *buf, size_t size) FAST_FUNC;
+ 
++#ifndef IO_REPARSE_TAG_APPEXECLINK
++# define IO_REPARSE_TAG_APPEXECLINK 0x8000001b
++#endif
++
+ ssize_t mingw_read(int fd, void *buf, size_t count);
+ int mingw_close(int fd);
+ int pipe(int filedes[2]);
+diff --git a/win32/winansi.c b/win32/winansi.c
+index 14fbee75f..84652b5f2 100644
+--- a/win32/winansi.c
++++ b/win32/winansi.c
+@@ -75,6 +75,10 @@ static int is_wine(void)
+ #define DISABLE_NEWLINE_AUTO_RETURN 0x0008
+ #endif
+ 
++#ifndef ENABLE_VIRTUAL_TERMINAL_INPUT
++#define ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
++#endif
++
+ int terminal_mode(int reset)
+ {
+ 	static int mode = -1;
+-- 
+2.30.2
+
