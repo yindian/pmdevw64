@@ -2,9 +2,12 @@ EXE = busybox.exe
 SOURCE = source/$(ARCH)
 SRCDIR = busybox-w32
 SRCURL = https://frippery.org/files/busybox/$(SRCFILE)
-SRCFILE = busybox-w32-FRP-4784-g5507c8744.tgz
-SRCMD5 = ab4f898c36f4f5dcb74355dd81952455
+SRCFILE = busybox-w32-FRP-5007-g82accfc19.tgz
+SRCMD5 = 430498acf892f2ca896278b7333a5746
 PATCHES = patch_alt_cp_ts.diff
+ifneq ($(shell $(CROSSHOST)-gcc -v 2>&1 | grep clang),)
+PATCHES += patch_clang.diff
+endif
 CONFIG = config
 ifneq ($(shell which gsed 2>/dev/null),)
 SED = gsed
