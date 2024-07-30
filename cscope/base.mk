@@ -4,8 +4,8 @@ SRCDIR = cscope-15.9/src
 SRCURL = https://downloads.sourceforge.net/project/cscope/cscope/v15.9/$(SRCFILE)
 SRCFILE = cscope-15.9.tar.gz
 SRCMD5 = 16f3cce078b6c0e42299def4028eea6f
-PDCURSES = PDCurses-3.8
-EXTRASRCURLS = https://downloads.sourceforge.net/project/pdcurses/pdcurses/3.8/$(PDCURSES).tar.gz
+PDCURSES = PDCurses-3.9
+EXTRASRCURLS = https://downloads.sourceforge.net/project/pdcurses/pdcurses/3.9/$(PDCURSES).tar.gz
 REGEX = regex-alpha3.8p1
 EXTRASRCURLS += https://github.com/garyhouston/regex/archive/alpha3.8p1.tar.gz
 EXTRASRCFILES = $(PDCURSES).tar.gz $(REGEX).tar.gz
@@ -45,6 +45,6 @@ $(SOURCE)/$(SRCDIR)/Makefile: $(SOURCEDIR)/$(SRCFILE)
 
 $(SOURCEDIR)/$(SRCFILE):
 	@mkdir -p $(@D)
-	for c in $(EXTRASRCURLS); do (cd $(SOURCEDIR); curl -ROJL $$c ); done
+	for c in $(EXTRASRCURLS); do (cd $(SOURCEDIR); [ -s *`basename $$c` ] || curl -ROJL $$c ); done
 	curl -RL $(SRCURL) -o $@ || (rm -f $@; exit 1)
 	[ "$$(md5sum $@ | awk '{print $$1}')" = $(SRCMD5) ] ||(rm -f $@; exit 1)
