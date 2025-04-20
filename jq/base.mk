@@ -1,5 +1,5 @@
 EXE = jq.exe
-SRCDIR = .
+SRCDIR = $(ARCH)
 SRCURL = https://github.com/stedolan/jq/releases/download/jq-1.4/$(SRCFILE)
 SRCFILE = $(SRCFILE_$(ARCH))
 SRCMD5 = $(SRCMD5_$(ARCH))
