@@ -54,10 +54,10 @@ index a6a8333..f357c24 100644
   * Create one new node and one new edge for every dependency.
   *
 diff --git a/miscutils/bc.c b/miscutils/bc.c
-index 01402b3..8d4787d 100644
+index 31485ae..97d54b8 100644
 --- a/miscutils/bc.c
 +++ b/miscutils/bc.c
-@@ -7489,7 +7489,7 @@ static int xc_vm_init(const char *env_len)
+@@ -7492,7 +7492,7 @@ static int xc_vm_init(const char *env_len)
  //TODO: in GNU bc, the check is (isatty(0) && isatty(1)),
  //-i option unconditionally enables this regardless of isatty():
  	if (isatty(0)) {
@@ -67,10 +67,10 @@ index 01402b3..8d4787d 100644
  		// With SA_RESTART, most system calls will restart
  		// (IOW: they won't fail with EINTR).
 diff --git a/networking/wget.c b/networking/wget.c
-index 5470502..6191c72 100644
+index 6a64836..d7825b3 100644
 --- a/networking/wget.c
 +++ b/networking/wget.c
-@@ -251,6 +251,7 @@ struct globals {
+@@ -259,6 +259,7 @@ struct globals {
  #endif
  	char *dir_prefix;
  #if ENABLE_FEATURE_WGET_LONG_OPTIONS
@@ -78,7 +78,7 @@ index 5470502..6191c72 100644
  	char *post_data;
  	char *post_file;
  	char *extra_headers;
-@@ -1293,23 +1294,81 @@ static void download_one_url(const char *url)
+@@ -1302,17 +1303,39 @@ static void download_one_url(const char *url)
  
  		if (option_mask32 & WGET_OPT_POST_FILE) {
  			int fd = xopen_stdin(G.post_file);
@@ -115,12 +115,25 @@ index 5470502..6191c72 100644
  				);
  			}
 +			if (fd < 0 && !G.post_data_len)
++			{
+ # if ENABLE_PLATFORM_MINGW32
+ 			if (!USR_HEADER_CONTENT_LENGTH)
+ 				SENDFMT(sfp, "Content-Length: %u\r\n",
+@@ -1323,7 +1346,6 @@ static void download_one_url(const char *url)
+ 				"%s",
+ 				G.post_data
+ 			);
+-		} else
+ # else
  			SENDFMT(sfp,
  				"Content-Length: %u\r\n"
- 				"\r\n"
+@@ -1331,8 +1353,46 @@ static void download_one_url(const char *url)
  				"%s",
  				(int) strlen(G.post_data), G.post_data
  			);
+-		} else
+ # endif
++			}
 +			else if (G.post_data_len) {
 +				len = G.post_data_len;
 +				if ((len >> 32) == 0)
@@ -158,26 +171,27 @@ index 5470502..6191c72 100644
 +				}
 +				close(fd);
 +			}
- 		} else
++		} else
  #endif
  		{
+ 			SENDFMT(sfp, "\r\n");
 diff --git a/shell/ash.c b/shell/ash.c
-index 13200da..c397e6f 100644
+index 3919118..72f1716 100644
 --- a/shell/ash.c
 +++ b/shell/ash.c
-@@ -198,6 +198,7 @@
- //                      APPLET_ODDNAME:name  main location    suid_type     help
- //applet:IF_SH_IS_ASH(  APPLET_ODDNAME(sh,   ash, BB_DIR_BIN, BB_SUID_DROP, ash))
+@@ -215,6 +215,7 @@
+ //applet:IF_SH_IS_ASH(  APPLET_ODDNAME(lash, ash, BB_DIR_BIN, BB_SUID_DROP, ash))
+ //applet:)
  //applet:IF_BASH_IS_ASH(APPLET_ODDNAME(bash, ash, BB_DIR_BIN, BB_SUID_DROP, ash))
 +//applet:IF_BASH_IS_ASH(APPLET_ODDNAME(dash, ash, BB_DIR_BIN, BB_SUID_DROP, ash))
  
  //kbuild:lib-$(CONFIG_SHELL_ASH) += ash.o ash_ptr_hack.o shell_common.o
  //kbuild:lib-$(CONFIG_ASH_RANDOM_SUPPORT) += random.o
 diff --git a/win32/mingw.c b/win32/mingw.c
-index 606a483..4bdd1e5 100644
+index cb1f84f..aacf8a0 100644
 --- a/win32/mingw.c
 +++ b/win32/mingw.c
-@@ -1615,7 +1615,7 @@ int mingw_mkdir(const char *path, int mode UNUSED_PARAM)
+@@ -1753,7 +1753,7 @@ int mingw_mkdir(const char *path, int mode UNUSED_PARAM)
  
  	if ( (ret=mkdir(path)) < 0 ) {
  		lerrno = errno;
@@ -186,7 +200,7 @@ index 606a483..4bdd1e5 100644
  			ret = 0;
  			lerrno = 0;
  		}
-@@ -1767,6 +1767,40 @@ int sysinfo(struct sysinfo *info)
+@@ -1907,6 +1907,40 @@ int sysinfo(struct sysinfo *info)
  	return 0;
  }
  
@@ -227,7 +241,7 @@ index 606a483..4bdd1e5 100644
  #undef strftime
  size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm *tm)
  {
-@@ -1834,6 +1868,30 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
+@@ -1974,6 +2008,30 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
  				/* Microsoft uses '#' rather than '-' to remove padding */
  				t[1] = '#';
  			}
@@ -258,7 +272,7 @@ index 606a483..4bdd1e5 100644
  			else if ( t[1] != '\0' ) {
  				++t;
  			}
-@@ -1844,6 +1902,9 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
+@@ -1984,6 +2042,9 @@ size_t mingw_strftime(char *buf, size_t max, const char *format, const struct tm
  
  				*t = '\0';
  				m = t - fmt;
@@ -268,66 +282,3 @@ index 606a483..4bdd1e5 100644
  				newfmt = xasprintf("%s%s%s", fmt, replace, t+2);
  				free(fmt);
  				t = newfmt + m + strlen(replace) - 1;
-diff --git a/win32/termios.c b/win32/termios.c
-index 45d4e77..4b30084 100644
---- a/win32/termios.c
-+++ b/win32/termios.c
-@@ -17,6 +17,15 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
- 		bb_error_msg_and_die("read_key only works on stdin");
- 	if (cin == INVALID_HANDLE_VALUE)
- 		return -1;
-+#if ENABLE_FEATURE_EURO
-+    if (buf[0]) { // 2-byte char sequence
-+        ret = (unsigned char) buf[1];
-+        buf[0] = buf[1] = 0;
-+        return ret;
-+    }
-+#else
-+    (void) buf;
-+#endif
- 	GetConsoleMode(cin, &mode);
- 	SetConsoleMode(cin, 0);
- 
-@@ -94,7 +103,20 @@ int64_t FAST_FUNC read_key(int fd, char *buf UNUSED_PARAM, int timeout)
- 		uchar = record.Event.KeyEvent.uChar.UnicodeChar;
- 		achar = uchar & 0x7f;
- 		if (achar != uchar)
-+#if 0
- 			WideCharToMultiByte(CP_ACP, 0, &uchar, 1, &achar, 1, NULL, NULL);
-+#else
-+        {
-+            int n = WideCharToMultiByte(CP_ACP, 0, &uchar, 1, buf, 2, NULL, NULL);;
-+            if (n < 2) {
-+                ret = buf[0] ? (unsigned char) buf[0] : achar;
-+                buf[0] = buf[1] = 0;
-+            } else {
-+                ret = (unsigned char) buf[0];
-+            }
-+        }
-+        else
-+#endif
- 		ret = achar;
- #else
- 		if ( (record.Event.KeyEvent.uChar.AsciiChar & 0x80) == 0x80 ) {
-diff --git a/win32/winansi.c b/win32/winansi.c
-index a78d5f7..2b4b882 100644
---- a/win32/winansi.c
-+++ b/win32/winansi.c
-@@ -661,6 +661,7 @@ static BOOL winansi_CharToOemBuff(LPCSTR s, LPSTR d, DWORD len)
- 
- 	if (!s || !d)
- 		return FALSE;
-+    i = (unsigned char) *s;
- 
- 	buf = xmalloc(len*sizeof(WCHAR));
- 	MultiByteToWideChar(CP_ACP, 0, s, len, buf, len);
-@@ -672,6 +673,9 @@ static BOOL winansi_CharToOemBuff(LPCSTR s, LPSTR d, DWORD len)
- 			}
- 		}
- 	}
-+    else if (len == 1 && d[0] == '?' && GetOEMCP() > 874) {
-+        d[0] = i;
-+    }
- 	free(buf);
- 	return TRUE;
- }

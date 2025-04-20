@@ -2,14 +2,10 @@ EXE = busybox.exe
 SOURCE = source/$(ARCH)
 SRCDIR = busybox-w32
 SRCURL = https://frippery.org/files/busybox/$(SRCFILE)
-SRCFILE = busybox-w32-FRP-5007-g82accfc19.tgz
-SRCMD5 = 430498acf892f2ca896278b7333a5746
+SRCFILE = busybox-w32-FRP-5579-g5749feb35.tgz
+SRCMD5 = 4555bc7c8f23fa495d0aeaee9b6ff8c6
 PATCHES = patch_alt_cp_ts.diff
-PATCHES += patch_old_mingw.diff
 PATCHES += patch_old_mingw_32.diff
-ifneq ($(shell $(CROSSHOST)-gcc -v 2>&1 | grep clang),)
-PATCHES += patch_clang.diff
-endif
 CONFIG = config
 ifneq ($(shell which gsed 2>/dev/null),)
 SED = gsed
@@ -49,8 +45,7 @@ else
 ifeq ($(ARCH),x64)
 	$(MAKE) -C $(SOURCE)/$(SRCDIR) mingw64_defconfig
 else
-	$(SED) 's/^\(CONFIG_CROSS_COMPILER_PREFIX\)=.*/\1="$(CROSSHOST)-"/' $(SOURCE)/$(SRCDIR)/configs/mingw64_defconfig > $(SOURCE)/$(SRCDIR)/configs/mingw$(ARCH)_defconfig 
-	$(MAKE) -C $(SOURCE)/$(SRCDIR) mingw$(ARCH)_defconfig
+	$(MAKE) -C $(SOURCE)/$(SRCDIR) mingw64a_defconfig
 endif
 endif
 	$(SED) -i '$(call config_to_sed, $<)' $@
