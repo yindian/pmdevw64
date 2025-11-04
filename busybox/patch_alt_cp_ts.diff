@@ -282,3 +282,18 @@ index cb1f84f..aacf8a0 100644
  				newfmt = xasprintf("%s%s%s", fmt, replace, t+2);
  				free(fmt);
  				t = newfmt + m + strlen(replace) - 1;
+diff --git a/win32/winansi.c b/win32/winansi.c
+index c7529c4..2c14082 100644
+--- a/win32/winansi.c
++++ b/win32/winansi.c
+@@ -724,8 +724,10 @@ static BOOL charToConBuffA(LPSTR s, DWORD len)
+ 	CPINFO acp_info, con_info;
+ 	WCHAR *buf;
+ 
++#if 0
+ 	if (acp == conocp)
+ 		return TRUE;
++#endif
+ 
+ 	if (!s || !GetCPInfo(acp, &acp_info) || !GetCPInfo(conocp, &con_info) ||
+ 			con_info.MaxCharSize > acp_info.MaxCharSize ||
