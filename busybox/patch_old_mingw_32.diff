@@ -1,21 +1,8 @@
-diff --git a/include/mingw.h b/include/mingw.h
-index 3ee1cc4..f7008b4 100644
---- a/include/mingw.h
-+++ b/include/mingw.h
-@@ -3,7 +3,7 @@
- #define IMPL(name,ret,retval,...) static inline ret name(__VA_ARGS__) { return retval; }
- 
- /* Use 64-bit time on 32-bit platforms. */
--#if !defined(_WIN64)
-+#if !defined(_WIN64) && defined(__MINGW64_VERSION_MAJOR) && (__MINGW64_VERSION_MAJOR >= 10)
- # define time_t __time64_t
- # define ctime(t) _ctime64(t)
- # define localtime(t) _localtime64(t)
 diff --git a/win32/process.c b/win32/process.c
-index 33f45ee..c70e420 100644
+index 44bc1f3..3fcc6a2 100644
 --- a/win32/process.c
 +++ b/win32/process.c
-@@ -547,6 +547,7 @@ mingw_execve(const char *cmd, char *const *argv, char *const *envp)
+@@ -554,6 +554,7 @@ mingw_execve(const char *cmd, char *const *argv, char *const *envp)
  {
  	intptr_t ret = mingw_spawn_interpreter(P_NOWAIT, cmd, argv, envp, 0);
  
@@ -23,7 +10,7 @@ index 33f45ee..c70e420 100644
  	if (ret == -1 && GetLastError() == ERROR_ELEVATION_REQUIRED) {
  		// Command exists but failed because it wants elevated privileges.
  		// Try again using ShellExecuteEx().
-@@ -555,6 +556,7 @@ mingw_execve(const char *cmd, char *const *argv, char *const *envp)
+@@ -562,6 +563,7 @@ mingw_execve(const char *cmd, char *const *argv, char *const *envp)
  		if (GetLastError())
  			exit(1);
  	}
